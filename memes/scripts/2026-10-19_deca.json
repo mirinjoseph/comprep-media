@@ -1,0 +1,12 @@
+{
+ "org": "DECA",
+ "shots": [
+  ["DECA people will wear a full suit|to first period on a Tuesday,", "carry a leather portfolio|with nothing in it, then ask,", "how'd you know|I went to nationals?"],
+  ["I don't know, bro.", "You shook the lunch lady's hand|and pitched her a loyalty program.", "Your group chat is called|the board of directors,", "and you've been role-playing|a hotel sale", "to your bathroom mirror|since August."],
+  ["Seems cool being|a normal DECA member.", "I wish I could be|a normal DECA member,", "but I can't because|I went to nationals."],
+  ["You met me at a very|nationals time in my life."],
+  ["Get yours at"]
+ ],
+ "say_end": "compprep dot app",
+ "url": "www.compprep.app"
+}
