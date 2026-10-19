@@ -132,7 +132,7 @@ def align(wav, script):
     F = ImageFont.truetype(FONT, 66)
     tl = []
     for ci, (k, c) in enumerate(chunks):
-        st = fmap(W[spans[ci][0]][0])
+        st = fmap(W[spans[ci - 1][1] + 1][0] if ci else 0.0)   # word after the previous chunk
         if ci == first_chunk[k]: st = off[k]           # caption changes on the cut
         tl.append([st, None]); render_cap(c, f'cap_{ci}.png', F)
     for ci in range(len(tl)):
@@ -140,7 +140,7 @@ def align(wav, script):
     plan = {'cuts': cuts, 'seg_dur': segs, 'shot_len': shot_len, 'offsets': off, 'captions': tl,
             'url': S.get('url', 'www.compprep.app'), 'chunks': [c for _, c in chunks]}
     json.dump(plan, open('plan.json', 'w'), indent=1)
-    print(json.dumps({'seg_dur': [round(x, 2) for x in segs], 'wan_durations': [int(np.ceil(x)) for x in segs],
+    print(json.dumps({'seg_dur': [round(x, 2) for x in segs], 'wan_durations': [max(2, int(np.ceil(x - 0.08))) for x in segs],
                       'total': round(off[-1], 2)}))
 
 
