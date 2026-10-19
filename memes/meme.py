@@ -5,9 +5,10 @@
   meme.py align    vc.wav script.json     -> plan.json, seg_1..5.mp3, a6.wav, cap_*.png
   meme.py assemble plan.json              -> final.mp4 (needs v1..v5.mp4 lip-sync clips)
 
-script.json: {"shots": [[chunk, ...] x5], "say_end": "compprep dot app", "url": "www.compprep.app"}
+script.json: {"shots": [[chunk, ...] x5], "url": "www.compprep.app"}  (optional "say_end": words spoken over the end card)
 chunk = caption text, "|" = line break. Shots: 1 medium hook, 2 wide roasts, 3 close-up twist,
-4 low-angle catchphrase, 5 wide "Get yours at". The end card is black with the URL.
+4 low-angle "See you at nationals.", 5 wide "How I got there? compprep dot app." The end card is black
+with the URL, silent.
 """
 import json, os, re, subprocess, sys
 from difflib import SequenceMatcher
@@ -91,7 +92,8 @@ def align(wav, script):
     stoks, sown = [], []                       # script tokens -> chunk index
     for ci, (_, c) in enumerate(chunks):
         for x in toks(c.replace('|', ' ')): stoks.append(x); sown.append(ci)
-    for x in toks(S.get('say_end', 'compprep dot app')): stoks.append(x); sown.append(len(chunks))
+    end_toks = toks(S.get('say_end', ''))        # spoken over the end card (empty = silent card)
+    for x in end_toks: stoks.append(x); sown.append(len(chunks))
     mp = {}
     for a, b, n in SequenceMatcher(None, stoks, flat, autojunk=False).get_matching_blocks():
         for j in range(n): mp[a + j] = owner[b + j]
@@ -99,30 +101,35 @@ def align(wav, script):
     def span(ci):
         idx = [mp[i] for i in range(len(stoks)) if sown[i] == ci and i in mp]
         return (min(idx), max(idx)) if idx else None
-    spans = [span(ci) for ci in range(len(chunks) + 1)]
+    spans = [span(ci) for ci in range(len(chunks) + (1 if end_toks else 0))]
     for ci, s in enumerate(spans):
         assert s is not None, f'could not align chunk {ci}: {chunks[ci][1] if ci < len(chunks) else "end"}'
     r = rms_curve(wav); total = dur(wav)
     # shot boundaries: quietest point between last word of shot k and first word of shot k+1
     first_chunk = [next(ci for ci, (k, _) in enumerate(chunks) if k == s) for s in range(5)] + [len(chunks)]
     cuts = [0.0]
-    for s in range(1, 6):
+    for s in range(1, 6 if end_toks else 5):
         prev_end = W[spans[first_chunk[s] - 1][1]][1]; nxt = W[spans[first_chunk[s]][0]][0]
         a, b = (prev_end - 0.12, nxt + 0.12) if nxt - prev_end < 0.15 else (prev_end, nxt)
         cuts.append(quietest(r, max(a, cuts[-1] + 0.5), b))
+    if not end_toks: cuts.append(total)
     cuts.append(total)
     # audio segments: shots 1-4 + pause, shot 5 padded to 2.0 s for the lip-sync model, end card audio
     segs = []
     for s in range(5):
         a, b = cuts[s], cuts[s + 1]
-        pad = f'apad=pad_dur={PADS[s]}' if s < 4 else 'apad=whole_dur=2.0'
+        pad = f'apad=pad_dur={PADS[s]}' if s < 4 else ('apad=whole_dur=2.0' if end_toks else 'apad=pad_dur=0.4,apad=whole_dur=2.0')
         sh(f'ffmpeg -nostdin -loglevel error -y -ss {a} -to {b} -i {wav} -af "afade=t=in:d=0.02,areverse,'
            f'afade=t=in:d=0.04,areverse,{pad}" -ar 44100 -ac 1 -b:a 192k seg_{s + 1}.mp3')
         segs.append(dur(f'seg_{s + 1}.mp3'))
-    sh(f'ffmpeg -nostdin -loglevel error -y -ss {cuts[5]} -i {wav} -ar 44100 -ac 1 a6.wav')
     # frame-exact shot lengths on the final timeline
-    shot_len = [round(x * FPS) / FPS for x in segs[:4]] + [round((cuts[5] - cuts[4] + 0.2) * FPS) / FPS,
-                                                           round((total - cuts[5] + 1.3) * FPS) / FPS]
+    if end_toks:
+        sh(f'ffmpeg -nostdin -loglevel error -y -ss {cuts[5]} -i {wav} -ar 44100 -ac 1 a6.wav')
+        shot_len = [round(x * FPS) / FPS for x in segs[:4]] + [round((cuts[5] - cuts[4] + 0.2) * FPS) / FPS,
+                                                               round((total - cuts[5] + 1.3) * FPS) / FPS]
+    else:   # shot 5 speaks the plug itself; the black URL card is silent
+        sh('ffmpeg -nostdin -loglevel error -y -f lavfi -i anullsrc=r=44100:cl=mono -t 2.2 a6.wav')
+        shot_len = [round(x * FPS) / FPS for x in segs[:4]] + [round(min(segs[4], cuts[5] - cuts[4] + 0.5) * FPS) / FPS, 2.2]
     off = np.concatenate([[0], np.cumsum(shot_len)]).tolist()
     def fmap(t):
         for s in range(6):
