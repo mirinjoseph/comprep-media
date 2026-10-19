@@ -1,0 +1,11 @@
+{
+ "org": "<ORG>",
+ "shots": [
+  ["<ORG> people will <specific behaviour>|<...>,", "<second behaviour>|<...>,", "then ask, how'd you know|I went to nationals?"],
+  ["I don't know, bro.", "<roast 1>|<...>,", "<roast 2>|<...>,", "and <roast 3>|<...>."],
+  ["Seems cool being|a normal <ORG> member.", "I wish I could be one,", "but I can't because|I went to nationals."],
+  ["See you at nationals."],
+  ["How I got there?|compprep.app"]
+ ],
+ "url": "www.compprep.app"
+}
