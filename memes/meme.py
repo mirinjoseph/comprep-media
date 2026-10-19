@@ -148,7 +148,7 @@ def assemble(planf):
     from PIL import Image, ImageDraw, ImageFont
     P = json.load(open(planf)); L = P['shot_len']
     for s in range(5):
-        sh(f'ffmpeg -nostdin -loglevel error -y -i v{s + 1}.mp4 -t {L[s]:.3f} -vf "scale=1440:1080:flags=lanczos,'
+        sh(f'ffmpeg -nostdin -loglevel error -y -i v{s + 1}.mp4 -vf "tpad=stop_mode=clone:stop_duration=1,trim=0:{L[s]:.3f},setpts=PTS-STARTPTS,scale=1440:1080:flags=lanczos,'
            f'setsar=1,fps={FPS},format=yuv420p" -an -c:v libx264 -crf 15 -preset fast sh_{s + 1}.mp4')
         sh(f'ffmpeg -nostdin -loglevel error -y -i seg_{s + 1}.mp3 -af "apad,atrim=0:{L[s]:.3f}" -ar 44100 -ac 2 au_{s + 1}.wav')
     im = Image.new('RGB', (1440, 1080), (0, 0, 0)); d = ImageDraw.Draw(im); F = ImageFont.truetype(FONT, 92)
