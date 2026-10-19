@@ -1,0 +1,12 @@
+{
+ "org": "FBLA",
+ "shots": [
+  ["FBLA people will bring a laminated|résumé to a sleepover,", "reply to the group project chat|with \"per my last email,\"", "then ask, how'd you know|I went to nationals?"],
+  ["I don't know, bro.", "You've traded so many pins|your blazer weighs eleven pounds,", "you practiced your speech|on a drive-thru speaker,", "and you call your mom|a valued stakeholder."],
+  ["Seems cool being|a normal FBLA member.", "I wish I could be|a normal FBLA member,", "but I can't because|I went to nationals."],
+  ["You met me at a very|nationals time in my life."],
+  ["Get yours at"]
+ ],
+ "say_end": "compprep dot app",
+ "url": "www.compprep.app"
+}
