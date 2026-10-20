@@ -115,9 +115,15 @@ def align(wav, script):
     if not end_toks: cuts.append(total)
     cuts.append(total)
     # audio segments: shots 1-4 + pause, shot 5 padded to 2.0 s for the lip-sync model, end card audio
+    # trim long silences: each shot starts 0.15 s before its first word and ends 0.2 s after its last word
+    # (the pauses between shots come from PADS, so a slow TTS gap never becomes dead air)
+    seg_a, seg_b = [], []
+    for s in range(5):
+        w0 = W[spans[first_chunk[s]][0]][0]; w1 = W[spans[first_chunk[s + 1] - 1][1]][1]
+        seg_a.append(max(cuts[s], w0 - 0.15)); seg_b.append(min(cuts[s + 1], w1 + 0.2))
     segs = []
     for s in range(5):
-        a, b = cuts[s], cuts[s + 1]
+        a, b = seg_a[s], seg_b[s]
         pad = f'apad=pad_dur={PADS[s]}' if s < 4 else ('apad=whole_dur=2.0' if end_toks else 'apad=pad_dur=0.4,apad=whole_dur=2.0')
         sh(f'ffmpeg -nostdin -loglevel error -y -ss {a} -to {b} -i {wav} -af "afade=t=in:d=0.02,areverse,'
            f'afade=t=in:d=0.04,areverse,{pad}" -ar 44100 -ac 1 -b:a 192k seg_{s + 1}.mp3')
@@ -125,15 +131,15 @@ def align(wav, script):
     # frame-exact shot lengths on the final timeline
     if end_toks:
         sh(f'ffmpeg -nostdin -loglevel error -y -ss {cuts[5]} -i {wav} -ar 44100 -ac 1 a6.wav')
-        shot_len = [round(x * FPS) / FPS for x in segs[:4]] + [round((cuts[5] - cuts[4] + 0.2) * FPS) / FPS,
+        shot_len = [round(x * FPS) / FPS for x in segs[:4]] + [round((cuts[5] - seg_a[4] + 0.2) * FPS) / FPS,
                                                                round((total - cuts[5] + 1.3) * FPS) / FPS]
     else:   # shot 5 speaks the plug itself; the black URL card is silent
         sh('ffmpeg -nostdin -loglevel error -y -f lavfi -i anullsrc=r=44100:cl=mono -t 2.2 a6.wav')
-        shot_len = [round(x * FPS) / FPS for x in segs[:4]] + [round(min(segs[4], cuts[5] - cuts[4] + 0.5) * FPS) / FPS, 2.2]
+        shot_len = [round(x * FPS) / FPS for x in segs[:4]] + [round(min(segs[4], seg_b[4] - seg_a[4] + 0.5) * FPS) / FPS, 2.2]
     off = np.concatenate([[0], np.cumsum(shot_len)]).tolist()
     def fmap(t):
         for s in range(6):
-            if cuts[s] <= t < cuts[s + 1]: return t - cuts[s] + off[s]
+            if cuts[s] <= t < cuts[s + 1]: return max(off[s], t - (seg_a[s] if s < 5 else cuts[s]) + off[s])
         return t
     if not os.path.exists(FONT): sh(f'curl -sSfL -o {FONT} {FONT_URL}')
     F = ImageFont.truetype(FONT, 66)
