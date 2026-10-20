@@ -1,0 +1,14 @@
+{
+ "org": "DECA",
+ "note": "DECA part 2: rooftop helipad, deadpan delivery; Joseph picked every line in the Oct 20 interview",
+ "shots": [
+  ["DECA people will say \"thank you|for your time\" to the drive-thru,", "firmly shake hands|with their Uber driver,", "then ask, how'd you know|I went to nationals?"],
+  ["I don't know, bro.", "You waited forty minutes|for an elevator full of blazers", "and called it networking,", "you role-played a fake hotel|manager so hard,", "the real hotel|gave you a discount,", "and you ironed a tie|for a dentist appointment", "and asked the dentist|for feedback."],
+  ["Seems cool being|a normal DECA member.", "I wish I could be one,", "but I can't because|I went to nationals."],
+  ["See you at nationals."],
+  ["How I got there?|compprep.app"]
+ ],
+ "url": "www.compprep.app",
+ "voice": {"model": "seed_audio", "voice_id": "549ff70a-3ee7-4f04-a4d9-89a24fab7709", "speech_rate": 10},
+ "lipsync": "kie: kling/ai-avatar-pro on shots 1,3,4; kling/ai-avatar-standard on shots 2,5"
+}
