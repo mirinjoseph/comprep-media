@@ -124,7 +124,7 @@ def align(wav, script):
     segs = []
     for s in range(5):
         a, b = seg_a[s], seg_b[s]
-        pad = f'apad=pad_dur={PADS[s]}' if s < 4 else ('apad=whole_dur=2.0' if end_toks else 'apad=pad_dur=0.4,apad=whole_dur=2.0')
+        pad = f'apad=pad_dur={PADS[s]},apad=whole_dur=2.1' if s < 4 else ('apad=whole_dur=2.0' if end_toks else 'apad=pad_dur=0.4,apad=whole_dur=2.0')
         sh(f'ffmpeg -nostdin -loglevel error -y -ss {a} -to {b} -i {wav} -af "afade=t=in:d=0.02,areverse,'
            f'afade=t=in:d=0.04,areverse,{pad}" -ar 44100 -ac 1 -b:a 192k seg_{s + 1}.mp3')
         segs.append(dur(f'seg_{s + 1}.mp3'))
