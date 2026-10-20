@@ -1,0 +1,12 @@
+{
+ "org": "BPA",
+ "shots": [
+  ["BPA people will color-code|their calendar for a Tuesday,", "bring a backup tie|to bowling night,", "then ask, how'd you know|I went to nationals?"],
+  ["I don't know, bro.", "You made a spreadsheet|to track your spreadsheets,", "you used parliamentary procedure|to pick family dinner,", "and you call lunch|a networking opportunity."],
+  ["Seems cool being|a normal BPA member.", "I wish I could be one,", "but I can't because|I went to nationals."],
+  ["See you at nationals."],
+  ["How I got there?|compprep.app"]
+ ],
+ "url": "www.compprep.app",
+ "voice": {"model": "seed_audio", "voice_id": "549ff70a-3ee7-4f04-a4d9-89a24fab7709", "speech_rate": 10}
+}
